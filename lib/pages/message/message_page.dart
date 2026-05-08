@@ -9,6 +9,8 @@ import 'package:get/get.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:soys_app/app/theme/app_theme.dart';
+import 'package:soys_app/core/constants/env_config.dart';
+import 'package:soys_app/core/data/local_app_data.dart';
 import 'package:soys_app/core/network/http_service.dart';
 import 'package:soys_app/models/app/app_models.dart';
 
@@ -35,16 +37,22 @@ class MessageController extends GetxController {
   /// English: Loads or refreshes data required by this feature and keeps usable fallback state when requests fail.
   Future<void> _loadMessages() async {
     _isLoading.value = true;
+    if (Environments.current.useLocalContent) {
+      _messageList.assignAll(LocalAppData.messages);
+      _isLoading.value = false;
+      return;
+    }
+
     final response = await _http.get<List<MessageModel>>(
       '/messages',
-      showErrorToast: false,
+      showErrorToast: true,
       fromJson: _parseMessages,
     );
 
     if (response.isSuccess && response.data != null) {
       _messageList.assignAll(response.data!);
     } else {
-      _messageList.assignAll(_defaultMessages);
+      _messageList.clear();
     }
     _isLoading.value = false;
   }
@@ -61,18 +69,6 @@ class MessageController extends GetxController {
         .map(MessageModel.fromJson)
         .toList();
   }
-
-  List<MessageModel> get _defaultMessages => List.generate(
-    10,
-    (i) => MessageModel(
-      id: '$i',
-      title: '系统通知 ${i + 1}',
-      content: '这是一条系统通知消息内容，通知编号：${i + 1}',
-      type: i % 3 == 0 ? 'system' : 'notification',
-      isRead: i > 2,
-      createTime: DateTime.now().subtract(Duration(hours: i)).toIso8601String(),
-    ),
-  );
 
   /// 中文：更新当前功能状态或持久化数据，并确保界面和本地缓存保持一致。
   /// English: Updates feature state or persisted data while keeping the UI and local cache consistent.

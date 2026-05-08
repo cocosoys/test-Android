@@ -35,6 +35,10 @@ class UpdateService extends GetxService {
   /// 中文：加载或刷新当前功能所需数据，并在失败时保留可用的兜底状态。
   /// English: Loads or refreshes data required by this feature and keeps usable fallback state when requests fail.
   Future<AppInfoModel?> checkUpdate() async {
+    if (Environments.current.useLocalContent) {
+      return null;
+    }
+
     try {
       final packageInfo = await PackageInfo.fromPlatform();
       final currentVersion = packageInfo.version;

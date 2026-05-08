@@ -9,7 +9,7 @@ import 'package:get/get.dart';
 
 import 'package:soys_app/app/routes/app_routes.dart';
 import 'package:soys_app/app/theme/app_theme.dart';
-import 'package:soys_app/core/constants/app_constants.dart';
+import 'package:soys_app/core/constants/env_config.dart';
 import 'package:soys_app/services/auth/auth_service.dart';
 import 'package:soys_app/services/storage/storage_service.dart';
 
@@ -79,7 +79,8 @@ class _SplashPageState extends State<SplashPage> {
               Text('agreement_content'.tr),
               const SizedBox(height: 8),
               GestureDetector(
-                onTap: () => _openAgreementPage('用户协议', AppConstants.termsUrl),
+                onTap: () =>
+                    _openAgreementPage('用户协议', Environments.current.termsUrl),
                 child: Text(
                   'terms'.tr,
                   style: const TextStyle(color: AppTheme.primaryColor),
@@ -88,7 +89,7 @@ class _SplashPageState extends State<SplashPage> {
               Text('agreement_and'.tr),
               GestureDetector(
                 onTap: () =>
-                    _openAgreementPage('隐私协议', AppConstants.privacyUrl),
+                    _openAgreementPage('隐私协议', Environments.current.privacyUrl),
                 child: Text(
                   'privacy'.tr,
                   style: const TextStyle(color: AppTheme.primaryColor),

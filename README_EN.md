@@ -66,22 +66,20 @@ flutter pub get
 ## Run
 
 ```bash
-flutter run --flavor dev
+flutter run --flavor dev --dart-define=APP_ENV=local
 ```
 
 Run on MuMu emulator:
 
 ```bash
-flutter run --flavor dev -d emulator-5554
+flutter run --flavor dev -d emulator-5554 --dart-define=APP_ENV=local
 ```
 
 ## Build
 
 ```bash
-flutter build apk --debug --flavor dev
-flutter build apk --debug --flavor qa
-flutter build apk --debug --flavor staging
-flutter build apk --debug --flavor prod
+flutter build apk --debug --flavor dev --dart-define=APP_ENV=local
+flutter build apk --release --flavor prod --dart-define=APP_ENV=online
 ```
 
 Common output path:
@@ -99,12 +97,14 @@ build/app/outputs/flutter-apk/app-dev-debug.apk
 | `staging` | `com.soys.app.test.staging` | Staging |
 | `prod` | `com.soys.app.test` | Production |
 
+Android flavors only control package names, app names, and Android Manifest placeholders. Flutter-side data sources are controlled by `APP_ENV`; the default value is `local`.
+
 ## Verification
 
 ```bash
 dart analyze
 flutter test
-flutter build apk --debug --flavor dev
+flutter build apk --debug --flavor dev --dart-define=APP_ENV=local
 ```
 
 MuMu install and launch example:
@@ -118,9 +118,9 @@ MuMu install and launch example:
 ## Login And Home
 
 - The first launch shows the user agreement and privacy policy dialog.
-- In non-production environments, the test account login has a local fallback so developers can enter the home page without a backend service.
-- Production does not use the local test-account fallback.
-- The home page first requests `/home/config`; if the API is unavailable, local fallback content is used for banners, entries, and recommendations.
+- With `APP_ENV=local`, login, home, messages, agreement pages, and H5 content all come from local data without server requests.
+- With `APP_ENV=online`, login, home, messages, agreement pages, and H5 content all come from servers without local fallback data.
+- Local home content lives in `lib/core/data/local_app_data.dart` and `assets/html/local_page.html`; online home configuration comes from `/home/config`.
 
 ## Configuration
 
@@ -132,10 +132,18 @@ lib/core/constants/env_config.dart
 
 Available environments:
 
-- `dev`
-- `test`
-- `staging`
-- `prod`
+- `local`: local-test environment; all content comes from local data and local H5 assets.
+- `online`: online environment; all content comes from server APIs and online H5 URLs.
+
+Compatibility aliases: `dev`, `test`, and `staging` resolve to `local`; `prod` and `production` resolve to `online`.
+
+Common commands:
+
+```bash
+flutter run --flavor dev --dart-define=APP_ENV=local
+flutter run --flavor prod --dart-define=APP_ENV=online
+flutter build apk --release --flavor prod --dart-define=APP_ENV=online
+```
 
 Android release signing reads optional properties from `android/local.properties`:
 
@@ -150,7 +158,7 @@ If release signing is not configured, release builds fall back to debug signing 
 
 ## Notes
 
-- Home fallback data is intended for development and offline verification. Production content should come from backend APIs.
+- Do not add local fallback data to the `APP_ENV=online` path, because online content must come only from servers.
 - JPush requires a real `jPushAppKey` before full push capability is enabled.
 - Firebase features require platform configuration files before they can be enabled in target environments.
 - Keep the flavor name `qa`; do not rename it back to `test`, because Gradle disallows flavor names starting with `test`.

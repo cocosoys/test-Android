@@ -91,4 +91,5 @@ class ErrorCode {
   static const int timeout = -2;
   static const int cancel = -3;
   static const int unknown = -4;
+  static const int localOnly = -5;
 }

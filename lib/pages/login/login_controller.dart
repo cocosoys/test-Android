@@ -9,6 +9,7 @@ import 'package:get/get.dart';
 
 import 'package:soys_app/app/routes/app_routes.dart';
 import 'package:soys_app/core/constants/app_constants.dart';
+import 'package:soys_app/core/constants/env_config.dart';
 import 'package:soys_app/services/auth/auth_service.dart';
 import 'package:soys_app/components/toast/app_toast.dart';
 
@@ -189,13 +190,15 @@ class LoginController extends GetxController
   /// 中文：处理账号认证相关流程，并把接口结果、加载状态和页面跳转保持同步。
   /// English: Handles account-authentication flow while keeping API results, loading state, and navigation in sync.
   void forgotPassword() {
-    _openWebPage('forgot_password'.tr, AppConstants.forgotPasswordUrl);
+    _openWebPage('forgot_password'.tr, Environments.current.forgotPasswordUrl);
   }
 
   /// 中文：处理导航、桥接或事件分发动作，统一外部交互入口。
   /// English: Handles navigation, bridge, or event-dispatch actions through a single interaction entry point.
   void _openOAuthPage(String title, String path) {
-    final url = '${AppConstants.siteUrl}$path';
+    final url = Environments.current.useLocalContent
+        ? Environments.current.siteUrl
+        : '${Environments.current.siteUrl}$path';
     _openWebPage(title, url);
   }
 

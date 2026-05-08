@@ -5,6 +5,7 @@
 // English: Comments in this file keep Chinese above English and use real Chinese characters instead of ASCII escapes.
 
 import 'package:get/get.dart';
+import 'package:soys_app/core/constants/env_config.dart';
 import 'package:soys_app/pages/webview/webview_page.dart';
 
 /// 中文：注册 WebViewBinding 对应路由需要的控制器或服务依赖。
@@ -17,7 +18,9 @@ class WebViewBinding extends Bindings {
     final args = Get.arguments as Map<String, dynamic>? ?? {};
     final parameters = Get.parameters;
     final url =
-        args['url'] as String? ?? parameters['url'] ?? 'https://soys.app';
+        args['url'] as String? ??
+        parameters['url'] ??
+        Environments.current.siteUrl;
     final title = args['title'] as String? ?? parameters['title'] ?? '';
 
     Get.lazyPut<AppWebViewController>(

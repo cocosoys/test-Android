@@ -81,10 +81,19 @@ class AppWebViewController extends GetxController {
             _webViewService.handleMessage(message.message, null);
           }
         },
-      )
-      ..loadRequest(Uri.parse(initialUrl));
+      );
 
-    webController.runJavaScript(_webViewService.getInjectJS());
+    _loadInitialUrl();
+  }
+
+  void _loadInitialUrl() {
+    if (initialUrl.startsWith('asset://')) {
+      final assetPath = initialUrl.substring('asset://'.length);
+      webController.loadFlutterAsset(assetPath);
+      return;
+    }
+
+    webController.loadRequest(Uri.parse(initialUrl));
   }
 
   /// 中文：转换接口或本地数据结构，隔离外部字段格式对页面层的影响。

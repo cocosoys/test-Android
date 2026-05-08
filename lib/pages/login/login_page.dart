@@ -10,6 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:soys_app/app/routes/app_routes.dart';
 import 'package:soys_app/app/theme/app_theme.dart';
+import 'package:soys_app/core/constants/env_config.dart';
 import 'package:soys_app/pages/login/login_controller.dart';
 
 /// 中文：构建 LoginPage 对应的页面界面，并把用户操作转交给控制器处理。
@@ -45,8 +46,10 @@ class LoginPage extends GetView<LoginController> {
               ),
               SizedBox(height: 24.h),
               _buildLoginButton(),
-              SizedBox(height: 16.h),
-              _buildTestAccountButton(),
+              if (Environments.current.allowLocalTestLogin) ...[
+                SizedBox(height: 16.h),
+                _buildTestAccountButton(),
+              ],
               SizedBox(height: 24.h),
               _buildThirdPartyLogin(),
               SizedBox(height: 16.h),

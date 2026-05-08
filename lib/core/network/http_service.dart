@@ -274,6 +274,13 @@ class HttpService extends GetxService {
     T Function(dynamic)? fromJson,
     bool showErrorToast = true,
   }) async {
+    if (Environments.current.useLocalContent) {
+      return ApiResponse(
+        code: ErrorCode.localOnly,
+        message: 'local_environment_no_remote_request',
+      );
+    }
+
     try {
       // 网络检测
       final connectivity = await Connectivity().checkConnectivity();

@@ -9,6 +9,7 @@ import 'package:dio/dio.dart' as dio;
 
 import 'package:soys_app/core/constants/app_constants.dart';
 import 'package:soys_app/core/constants/env_config.dart';
+import 'package:soys_app/core/data/local_app_data.dart';
 import 'package:soys_app/core/network/http_service.dart';
 import 'package:soys_app/models/network/api_response.dart';
 import 'package:soys_app/models/user/user_model.dart';
@@ -52,6 +53,10 @@ class AuthService extends GetxService {
     String account,
     String password,
   ) async {
+    if (Environments.current.useLocalContent) {
+      return _loginWithLocalUser(username: account);
+    }
+
     final response = await _http.post<UserModel>(
       '/auth/login',
       data: {'account': account, 'password': password, 'loginType': 'account'},
@@ -70,6 +75,10 @@ class AuthService extends GetxService {
     String phone,
     String smsCode,
   ) async {
+    if (Environments.current.useLocalContent) {
+      return _loginWithLocalUser(phone: phone);
+    }
+
     final response = await _http.post<UserModel>(
       '/auth/login/sms',
       data: {'phone': phone, 'code': smsCode, 'loginType': 'phone'},
@@ -88,6 +97,10 @@ class AuthService extends GetxService {
     String email,
     String password,
   ) async {
+    if (Environments.current.useLocalContent) {
+      return _loginWithLocalUser(email: email);
+    }
+
     final response = await _http.post<UserModel>(
       '/auth/login/email',
       data: {'email': email, 'password': password, 'loginType': 'email'},
@@ -103,6 +116,10 @@ class AuthService extends GetxService {
 
   /// 微信登录
   Future<ApiResponse<UserModel>> loginWithWeChat(String code) async {
+    if (Environments.current.useLocalContent) {
+      return _loginWithLocalUser(nickname: '本地微信用户');
+    }
+
     final response = await _http.post<UserModel>(
       '/auth/login/wechat',
       data: {'code': code, 'loginType': 'wechat'},
@@ -121,6 +138,10 @@ class AuthService extends GetxService {
     String openId,
     String accessToken,
   ) async {
+    if (Environments.current.useLocalContent) {
+      return _loginWithLocalUser(nickname: '本地 QQ 用户');
+    }
+
     final response = await _http.post<UserModel>(
       '/auth/login/qq',
       data: {'openId': openId, 'accessToken': accessToken, 'loginType': 'qq'},
@@ -139,6 +160,10 @@ class AuthService extends GetxService {
     String identityToken,
     String authorizationCode,
   ) async {
+    if (Environments.current.useLocalContent) {
+      return _loginWithLocalUser(nickname: '本地 Apple 用户');
+    }
+
     final response = await _http.post<UserModel>(
       '/auth/login/apple',
       data: {
@@ -158,6 +183,10 @@ class AuthService extends GetxService {
 
   /// 测试账号登录
   Future<ApiResponse<UserModel>> loginWithTestAccount() async {
+    if (Environments.current.useLocalContent) {
+      return _loginWithLocalUser(username: AppConstants.testAccount);
+    }
+
     final response = await _http.post<UserModel>(
       '/auth/login',
       data: {
@@ -174,19 +203,7 @@ class AuthService extends GetxService {
       return response;
     }
 
-    if (Environments.current.name == 'prod') {
-      return response;
-    }
-
-    final user = UserModel(
-      id: 'test-user',
-      username: AppConstants.testAccount,
-      nickname: '测试用户',
-      token: 'local-test-token',
-      refreshToken: 'local-test-refresh-token',
-    );
-    await _onLoginSuccess(user);
-    return ApiResponse(code: 0, message: 'local_test_account', data: user);
+    return response;
   }
 
   /// 注册
@@ -197,6 +214,10 @@ class AuthService extends GetxService {
     String? email,
     String? smsCode,
   }) async {
+    if (Environments.current.useLocalContent) {
+      return _loginWithLocalUser(username: account, phone: phone, email: email);
+    }
+
     final response = await _http.post<UserModel>(
       '/auth/register',
       data: {
@@ -220,7 +241,31 @@ class AuthService extends GetxService {
   /// 中文：处理账号认证相关流程，并把接口结果、加载状态和页面跳转保持同步。
   /// English: Handles account-authentication flow while keeping API results, loading state, and navigation in sync.
   Future<ApiResponse> sendSmsCode(String phone) async {
+    if (Environments.current.useLocalContent) {
+      return ApiResponse(code: ErrorCode.success, message: 'local_sms_sent');
+    }
+
     return _http.post('/auth/sms/send', data: {'phone': phone});
+  }
+
+  Future<ApiResponse<UserModel>> _loginWithLocalUser({
+    String? username,
+    String? phone,
+    String? email,
+    String? nickname,
+  }) async {
+    final user = LocalAppData.user(
+      username: username,
+      phone: phone,
+      email: email,
+      nickname: nickname,
+    );
+    await _onLoginSuccess(user);
+    return ApiResponse(
+      code: ErrorCode.success,
+      message: 'local_login',
+      data: user,
+    );
   }
 
   /// 登录成功处理
@@ -259,6 +304,14 @@ class AuthService extends GetxService {
 
   /// 上传头像
   Future<ApiResponse<String>> uploadAvatar(String imagePath) async {
+    if (Environments.current.useLocalContent) {
+      return ApiResponse(
+        code: ErrorCode.success,
+        message: 'local_avatar',
+        data: imagePath,
+      );
+    }
+
     final formData = dio.FormData.fromMap({
       'file': await dio.MultipartFile.fromFile(imagePath),
     });
@@ -277,8 +330,17 @@ class AuthService extends GetxService {
     );
   }
 
-  /// 保存用户资料。后端不可用时保留本地乐观更新，避免资料页无法使用。
+  /// 保存用户资料。
   Future<ApiResponse<UserModel>> updateProfile(UserModel user) async {
+    if (Environments.current.useLocalContent) {
+      await updateUserInfo(user);
+      return ApiResponse(
+        code: ErrorCode.success,
+        message: 'local_profile_saved',
+        data: user,
+      );
+    }
+
     final response = await _http.put<UserModel>(
       '/user/profile',
       data: {
@@ -296,7 +358,6 @@ class AuthService extends GetxService {
       return response;
     }
 
-    await updateUserInfo(user);
-    return ApiResponse(code: ErrorCode.success, message: 'success', data: user);
+    return response;
   }
 }

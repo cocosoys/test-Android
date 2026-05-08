@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SOYS 本地测试页</title>
+  <style>
+    :root {
+      color-scheme: light;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f7fb;
+      color: #1f2937;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px 18px;
+    }
+
+    main {
+      max-width: 720px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 12px;
+      font-size: 24px;
+      line-height: 1.25;
+    }
+
+    p {
+      margin: 0 0 14px;
+      line-height: 1.7;
+      color: #4b5563;
+    }
+
+    section {
+      margin-top: 18px;
+      padding: 16px;
+      border: 1px solid #dfe3ea;
+      border-radius: 8px;
+      background: #ffffff;
+    }
+
+    code {
+      padding: 2px 5px;
+      border-radius: 4px;
+      background: #eef2ff;
+      color: #3730a3;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <h1>SOYS 本地测试内容</h1>
+    <p>当前页面来自 App 内置 assets，不依赖服务器、CDN 或外部网络。</p>
+    <section>
+      <p>当环境为 <code>local</code> 时，首页、消息、测试用户、协议页和默认 WebView 内容都来自本地。</p>
+      <p>当环境为 <code>online</code> 时，这些内容应由服务器接口或线上 H5 地址返回。</p>
+    </section>
+  </main>
+</body>
+</html>

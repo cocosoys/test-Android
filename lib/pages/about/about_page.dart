@@ -10,7 +10,7 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 
 import 'package:soys_app/app/routes/app_routes.dart';
 import 'package:soys_app/app/theme/app_theme.dart';
-import 'package:soys_app/core/constants/app_constants.dart';
+import 'package:soys_app/core/constants/env_config.dart';
 import 'package:soys_app/services/device/device_service.dart';
 import 'package:soys_app/services/update/update_service.dart';
 
@@ -66,13 +66,13 @@ class AboutController extends GetxController {
   /// 中文：处理导航、桥接或事件分发动作，统一外部交互入口。
   /// English: Handles navigation, bridge, or event-dispatch actions through a single interaction entry point.
   void openPrivacy() {
-    _openAgreementPage('隐私协议', AppConstants.privacyUrl);
+    _openAgreementPage('隐私协议', Environments.current.privacyUrl);
   }
 
   /// 中文：处理导航、桥接或事件分发动作，统一外部交互入口。
   /// English: Handles navigation, bridge, or event-dispatch actions through a single interaction entry point.
   void openTerms() {
-    _openAgreementPage('用户协议', AppConstants.termsUrl);
+    _openAgreementPage('用户协议', Environments.current.termsUrl);
   }
 
   /// 中文：处理导航、桥接或事件分发动作，统一外部交互入口。
