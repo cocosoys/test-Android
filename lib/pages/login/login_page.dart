@@ -46,7 +46,7 @@ class LoginPage extends GetView<LoginController> {
               ),
               SizedBox(height: 24.h),
               _buildLoginButton(),
-              if (Environments.current.allowLocalTestLogin) ...[
+              if (Environments.current.showTestAccountLogin) ...[
                 SizedBox(height: 16.h),
                 _buildTestAccountButton(),
               ],

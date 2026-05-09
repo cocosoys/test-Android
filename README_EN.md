@@ -66,20 +66,20 @@ flutter pub get
 ## Run
 
 ```bash
-flutter run --flavor dev --dart-define=APP_ENV=local
+flutter run --flavor dev
 ```
 
 Run on MuMu emulator:
 
 ```bash
-flutter run --flavor dev -d emulator-5554 --dart-define=APP_ENV=local
+flutter run --flavor dev -d emulator-5554
 ```
 
 ## Build
 
 ```bash
-flutter build apk --debug --flavor dev --dart-define=APP_ENV=local
-flutter build apk --release --flavor prod --dart-define=APP_ENV=online
+flutter build apk --debug --flavor dev
+flutter build apk --release --flavor prod
 ```
 
 Common output path:
@@ -97,14 +97,14 @@ build/app/outputs/flutter-apk/app-dev-debug.apk
 | `staging` | `com.soys.app.test.staging` | Staging |
 | `prod` | `com.soys.app.test` | Production |
 
-Android flavors only control package names, app names, and Android Manifest placeholders. Flutter-side data sources are controlled by `APP_ENV`; the default value is `local`.
+Android flavors only control package names, app names, and Android Manifest placeholders. Flutter-side data sources are controlled by `currentEnvironmentName` in `lib/core/constants/env_config.dart`; the default value is `local`.
 
 ## Verification
 
 ```bash
 dart analyze
 flutter test
-flutter build apk --debug --flavor dev --dart-define=APP_ENV=local
+flutter build apk --debug --flavor dev
 ```
 
 MuMu install and launch example:
@@ -118,9 +118,10 @@ MuMu install and launch example:
 ## Login And Home
 
 - The first launch shows the user agreement and privacy policy dialog.
-- With `APP_ENV=local`, login, home, messages, agreement pages, and H5 content all come from local data without server requests.
-- With `APP_ENV=online`, login, home, messages, agreement pages, and H5 content all come from servers without local fallback data.
-- Local home content lives in `lib/core/data/local_app_data.dart` and `assets/html/local_page.html`; online home configuration comes from `/home/config`.
+- With `currentEnvironmentName = 'local'`, login, home, messages, agreement pages, and H5 content all come from local data without server requests.
+- With `currentEnvironmentName = 'dev'`, login, home, messages, agreement pages, and H5 content all come from development servers.
+- With `currentEnvironmentName = 'prod'`, login, home, messages, agreement pages, and H5 content all come from production servers without local fallback data.
+- Local home content lives in `lib/core/data/local_app_data.dart` and `assets/html/local_page.html`; `dev`/`prod` home configuration comes from `/home/config`.
 
 ## Configuration
 
@@ -130,19 +131,26 @@ Environment configuration:
 lib/core/constants/env_config.dart
 ```
 
+Active environment field:
+
+```dart
+static const currentEnvironmentName = 'local';
+```
+
 Available environments:
 
 - `local`: local-test environment; all content comes from local data and local H5 assets.
-- `online`: online environment; all content comes from server APIs and online H5 URLs.
+- `dev`: development environment; all content comes from development servers.
+- `prod`: production environment; all content comes from production servers.
 
-Compatibility aliases: `dev`, `test`, and `staging` resolve to `local`; `prod` and `production` resolve to `online`.
+Compatibility aliases: `test`, `qa`, and `staging` resolve to `dev`; `online` and `production` resolve to `prod`.
 
 Common commands:
 
 ```bash
-flutter run --flavor dev --dart-define=APP_ENV=local
-flutter run --flavor prod --dart-define=APP_ENV=online
-flutter build apk --release --flavor prod --dart-define=APP_ENV=online
+flutter run --flavor dev
+flutter build apk --debug --flavor dev
+flutter build apk --release --flavor prod
 ```
 
 Android release signing reads optional properties from `android/local.properties`:
@@ -158,7 +166,7 @@ If release signing is not configured, release builds fall back to debug signing 
 
 ## Notes
 
-- Do not add local fallback data to the `APP_ENV=online` path, because online content must come only from servers.
+- Do not add local fallback data to the `dev` or `prod` paths, because remote content must come only from servers.
 - JPush requires a real `jPushAppKey` before full push capability is enabled.
 - Firebase features require platform configuration files before they can be enabled in target environments.
 - Keep the flavor name `qa`; do not rename it back to `test`, because Gradle disallows flavor names starting with `test`.

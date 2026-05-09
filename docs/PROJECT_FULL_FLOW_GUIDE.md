@@ -275,7 +275,7 @@ lib/models/
 - 接口响应统一使用 `ApiResponse<T>`。
 - 页面不要直接依赖 Dio。
 - 页面控制器只关心业务结果，不处理底层网络错误细节。
-- 需要本地测试数据时，只能放在 `APP_ENV=local` 链路中，不要让线上链路读取本地内容。
+- 需要本地测试数据时，只能放在 `currentEnvironmentName = 'local'` 链路中，不要让 `dev` 或 `prod` 链路读取本地内容。
 
 ### 5.5 多语言开发
 
@@ -351,9 +351,7 @@ android/app/src/main/AndroidManifest.xml
 
 ```bash
 flutter build apk --debug --flavor dev
-flutter build apk --debug --flavor qa
-flutter build apk --debug --flavor staging
-flutter build apk --debug --flavor prod
+flutter build apk --release --flavor prod
 ```
 
 release 构建：
@@ -363,31 +361,51 @@ flutter build apk --release --flavor prod
 flutter build appbundle --release --flavor prod
 ```
 
-注意：Android flavor 会影响包名、应用名和 Manifest placeholder，但 Flutter 侧数据来源由 `--dart-define=APP_ENV=...` 控制。当前项目只保留两个运行数据环境：
+注意：Android flavor 会影响包名、应用名和 Manifest placeholder，但 Flutter 侧数据来源由 `lib/core/constants/env_config.dart` 中的 `currentEnvironmentName` 控制。当前项目保留三套运行数据环境：
 
-| APP_ENV | 数据来源 | 适用场景 |
+| currentEnvironmentName | 数据来源 | 适用场景 |
 | --- | --- | --- |
 | `local` | 全部来自本地数据和本地 H5 资源 | 本地开发、无后端验证、MuMu 模拟器调试 |
-| `online` | 全部来自服务器接口和线上 H5 地址 | 线上联调、正式打包、发布验证 |
+| `dev` | 全部来自开发服务器接口和开发 H5 地址 | 后端联调、开发服务器验证 |
+| `prod` | 全部来自生产服务器接口和生产 H5 地址 | 正式打包、发布验证 |
 
-默认值是 `local`。历史别名会被兼容解析：`dev`、`test`、`staging` 等同于 `local`，`prod`、`production` 等同于 `online`。
+默认值是 `local`。历史别名会被兼容解析：`test`、`qa`、`staging` 等同于 `dev`，`online`、`production` 等同于 `prod`。
+
+配置文件：
+
+```text
+lib/core/constants/env_config.dart
+```
+
+当前环境字段：
+
+```dart
+static const currentEnvironmentName = 'local';
+```
 
 本地测试构建：
 
 ```bash
-flutter run --flavor dev --dart-define=APP_ENV=local
-flutter build apk --debug --flavor dev --dart-define=APP_ENV=local
+flutter run --flavor dev
+flutter build apk --debug --flavor dev
 ```
 
-线上构建：
+开发服务器构建：
 
 ```bash
-flutter run --flavor prod --dart-define=APP_ENV=online
-flutter build apk --release --flavor prod --dart-define=APP_ENV=online
-flutter build appbundle --release --flavor prod --dart-define=APP_ENV=online
+flutter run --flavor dev
+flutter build apk --debug --flavor dev
 ```
 
-维护环境边界时要遵守一条规则：`local` 链路不能请求服务器，`online` 链路不能读取本地兜底内容。否则测试结果会混淆，线上问题也容易被本地假数据掩盖。
+生产构建：
+
+```bash
+flutter run --flavor prod
+flutter build apk --release --flavor prod
+flutter build appbundle --release --flavor prod
+```
+
+维护环境边界时要遵守一条规则：`local` 链路不能请求服务器，`dev` 和 `prod` 链路不能读取本地兜底内容。否则测试结果会混淆，远程问题也容易被本地假数据掩盖。
 
 ## 7. WebView/H5 混合开发方式
 
@@ -996,7 +1014,7 @@ C:\flutter\bin\cache\dart-sdk\bin\dart.exe C:\flutter\bin\cache\flutter_tools.sn
 
 ### 13.4 flavor 切了但接口环境没切
 
-Android flavor 只保证 Android 包配置变化，不自动保证 Flutter 数据环境变化。打包前同时检查 flavor 和 `APP_ENV`：
+Android flavor 只保证 Android 包配置变化，不自动保证 Flutter 数据环境变化。打包前同时检查 flavor 和 `currentEnvironmentName`：
 
 ```text
 lib/core/constants/env_config.dart
@@ -1005,11 +1023,12 @@ lib/core/constants/env_config.dart
 常用组合：
 
 ```bash
-flutter run --flavor dev --dart-define=APP_ENV=local
-flutter build apk --release --flavor prod --dart-define=APP_ENV=online
+flutter run --flavor dev
+flutter build apk --debug --flavor dev
+flutter build apk --release --flavor prod
 ```
 
-如果线上包仍显示本地内容，优先检查构建命令是否漏了 `--dart-define=APP_ENV=online`。如果本地测试包开始请求服务器，检查是否误传了 `APP_ENV=online`。
+如果生产包仍显示本地内容，优先检查 `currentEnvironmentName` 是否仍为 `local`。如果本地测试包开始请求服务器，检查它是否被改成了 `dev` 或 `prod`。
 
 ### 13.5 release 包安装失败
 

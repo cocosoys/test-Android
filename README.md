@@ -68,20 +68,20 @@ flutter pub get
 ## 运行
 
 ```bash
-flutter run --flavor dev --dart-define=APP_ENV=local
+flutter run --flavor dev
 ```
 
 指定 MuMu 模拟器设备：
 
 ```bash
-flutter run --flavor dev -d emulator-5554 --dart-define=APP_ENV=local
+flutter run --flavor dev -d emulator-5554
 ```
 
 ## 构建
 
 ```bash
-flutter build apk --debug --flavor dev --dart-define=APP_ENV=local
-flutter build apk --release --flavor prod --dart-define=APP_ENV=online
+flutter build apk --debug --flavor dev
+flutter build apk --release --flavor prod
 ```
 
 常用输出路径：
@@ -99,14 +99,14 @@ build/app/outputs/flutter-apk/app-dev-debug.apk
 | `staging` | `com.soys.app.test.staging` | 预发布环境 |
 | `prod` | `com.soys.app.test` | 生产环境 |
 
-Android flavor 只负责包名、应用名和 Android Manifest placeholder。Flutter 侧数据来源由 `APP_ENV` 控制，默认值是 `local`。
+Android flavor 只负责包名、应用名和 Android Manifest placeholder。Flutter 侧数据来源由 `lib/core/constants/env_config.dart` 中的 `currentEnvironmentName` 控制，默认值是 `local`。
 
 ## 验证命令
 
 ```bash
 dart analyze
 flutter test
-flutter build apk --debug --flavor dev --dart-define=APP_ENV=local
+flutter build apk --debug --flavor dev
 ```
 
 MuMu 安装和启动示例：
@@ -120,9 +120,10 @@ MuMu 安装和启动示例：
 ## 登录与首页
 
 - 首次启动会展示“用户协议与隐私政策”弹窗。
-- `APP_ENV=local` 时登录、首页、消息、协议页和 H5 内容全部来自本地，不请求服务器。
-- `APP_ENV=online` 时登录、首页、消息、协议页和 H5 内容全部来自服务器，不再使用本地兜底数据。
-- 首页本地内容位于 `lib/core/data/local_app_data.dart` 和 `assets/html/local_page.html`；线上首页配置来自 `/home/config`。
+- `currentEnvironmentName = 'local'` 时登录、首页、消息、协议页和 H5 内容全部来自本地，不请求服务器。
+- `currentEnvironmentName = 'dev'` 时登录、首页、消息、协议页和 H5 内容全部来自开发服务器。
+- `currentEnvironmentName = 'prod'` 时登录、首页、消息、协议页和 H5 内容全部来自生产服务器，不再使用本地兜底数据。
+- 首页本地内容位于 `lib/core/data/local_app_data.dart` 和 `assets/html/local_page.html`；`dev`/`prod` 首页配置来自 `/home/config`。
 
 ## 配置说明
 
@@ -132,19 +133,26 @@ MuMu 安装和启动示例：
 lib/core/constants/env_config.dart
 ```
 
+当前环境字段：
+
+```dart
+static const currentEnvironmentName = 'local';
+```
+
 主要环境：
 
 - `local`：本地测试环境，所有内容来自本地数据和本地 H5 资源。
-- `online`：线上环境，所有内容来自服务器接口和线上 H5 地址。
+- `dev`：开发环境，所有内容来自开发服务器。
+- `prod`：生产环境，所有内容来自生产服务器。
 
-兼容别名：`dev`、`test`、`staging` 会解析为 `local`，`prod`、`production` 会解析为 `online`。
+兼容别名：`test`、`qa`、`staging` 会解析为 `dev`，`online`、`production` 会解析为 `prod`。
 
 常用命令：
 
 ```bash
-flutter run --flavor dev --dart-define=APP_ENV=local
-flutter run --flavor prod --dart-define=APP_ENV=online
-flutter build apk --release --flavor prod --dart-define=APP_ENV=online
+flutter run --flavor dev
+flutter build apk --debug --flavor dev
+flutter build apk --release --flavor prod
 ```
 
 Android 签名配置读取 `android/local.properties` 中的可选字段：
@@ -160,7 +168,7 @@ keyPassword=...
 
 ## 注意事项
 
-- 不要在 `APP_ENV=online` 的链路中添加本地兜底数据，否则会破坏“线上内容只来自服务器”的边界。
+- 不要在 `dev` 或 `prod` 的链路中添加本地兜底数据，否则会破坏“远程环境只来自服务器”的边界。
 - JPush 需要配置真实 `jPushAppKey` 后才会启用完整推送能力。
 - Firebase 相关能力需要对应平台配置文件后才能在目标环境启用。
 - `qa` 是 Gradle flavor 名；不要改回 `test`，Gradle 不允许 flavor 名以 `test` 开头。

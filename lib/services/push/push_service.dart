@@ -49,7 +49,7 @@ class PushService extends GetxService {
       _jPush.setup(
         appKey: appKey,
         channel: 'developer-default',
-        production: Environments.current.isOnline,
+        production: Environments.current.isProd,
         debug: Environments.current.enableLog,
       );
 

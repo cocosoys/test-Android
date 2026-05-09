@@ -1,8 +1,8 @@
 // 中文：本文件集中提供本地测试环境的数据，确保 local 环境不依赖服务器。
 // English: This file centralizes local-test data so the local environment does not depend on servers.
 //
-// 中文：线上环境不能使用这里的数据，线上内容必须由接口返回。
-// English: The online environment must not use this data; online content must come from APIs.
+// 中文：dev 和 prod 环境不能使用这里的数据，远程环境内容必须由接口返回。
+// English: Dev and prod environments must not use this data; remote content must come from APIs.
 
 import 'package:soys_app/core/constants/app_constants.dart';
 import 'package:soys_app/models/app/app_models.dart';
@@ -44,7 +44,7 @@ class LocalAppData {
       },
       {
         'title': '本地推荐内容 3',
-        'description': '切换到 online 后推荐内容必须由服务器返回。',
+        'description': '切换到 dev 或 prod 后推荐内容必须由服务器返回。',
         'url': localPageUrl,
       },
     ],
